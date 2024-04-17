@@ -165,6 +165,11 @@ static void setWindowStandardButtonHidden(CFTypeRef windowRef, NSWindowButton bt
 	}
 }
 
+static void setWindowLevel(CFTypeRef windowRef, NSWindowLevel level) {
+	NSWindow *window = (__bridge NSWindow *)windowRef;
+	window.level = level;
+}
+
 static void performWindowDragWithEvent(CFTypeRef windowRef, CFTypeRef evt) {
 	@autoreleasepool {
 		NSWindow *window = (__bridge NSWindow *)windowRef;
@@ -482,6 +487,11 @@ func (w *window) Configure(options []Option) {
 	// When toggling the titlebar, the layer doesn't update its frame
 	// until the next resize. Force it.
 	C.resetLayerFrame(w.view)
+	level := C.NSWindowLevel(C.NSNormalWindowLevel)
+	if cnf.AlwaysOnTop {
+		level = C.NSWindowLevel(C.NSStatusWindowLevel)
+	}
+	C.setWindowLevel(window, level)
 }
 
 func (w *window) setTitle(title string) {
