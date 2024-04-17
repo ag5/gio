@@ -47,6 +47,8 @@ type Config struct {
 	Decorated bool
 	// Focused reports whether has the keyboard focus.
 	Focused bool
+	// AlwaysOnTop makes the window always on top.
+	AlwaysOnTop bool
 	// decoHeight is the height of the fallback decoration for platforms such
 	// as Wayland that may need fallback client-side decorations.
 	decoHeight unit.Dp

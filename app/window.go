@@ -838,6 +838,12 @@ func Title(t string) Option {
 	}
 }
 
+func AlwaysOnTop(b bool) Option {
+	return func(_ unit.Metric, cnf *Config) {
+		cnf.AlwaysOnTop = b
+	}
+}
+
 // Size sets the size of the window. The mode will be changed to Windowed.
 func Size(w, h unit.Dp) Option {
 	if w <= 0 {
