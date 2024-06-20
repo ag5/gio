@@ -81,6 +81,8 @@ const (
 	Minimized
 	// Maximized is for systems where the window can be made to fill the available monitor area.
 	Maximized
+
+	Hidden
 )
 
 // Option changes the mode of a Window.
@@ -101,6 +103,8 @@ func (m WindowMode) String() string {
 		return "minimized"
 	case Maximized:
 		return "maximized"
+	case Hidden:
+		return "hidden"
 	}
 	return ""
 }
