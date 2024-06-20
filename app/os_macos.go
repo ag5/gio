@@ -208,6 +208,17 @@ static void resetLayerFrame(CFTypeRef viewRef) {
 	}
 }
 
+static void unhideApp(CFTypeRef windowRef) {
+	@autoreleasepool {
+		NSWindow* window = (__bridge NSWindow *)windowRef;
+		[NSApp activateIgnoringOtherApps:YES];
+	}
+}
+
+static void hideApp() {
+	[[NSApplication sharedApplication] hide: nil];
+}
+
 static void hideWindow(CFTypeRef windowRef) {
 	@autoreleasepool {
 		NSWindow* window = (__bridge NSWindow *)windowRef;
@@ -391,6 +402,14 @@ func (w *window) Configure(options []Option) {
 	window := C.windowForView(w.view)
 
 	switch cnf.Mode {
+	case Hidden:
+		switch prev.Mode {
+		case Hidden:
+		default:
+			w.config.Mode = Hidden
+			C.hideApp()
+		}
+
 	case Fullscreen:
 		switch prev.Mode {
 		case Fullscreen:
@@ -423,6 +442,9 @@ func (w *window) Configure(options []Option) {
 		}
 	case Windowed:
 		switch prev.Mode {
+		case Hidden:
+			C.unhideApp(window)
+			C.unhideWindow(window)
 		case Fullscreen:
 			C.toggleFullScreen(window)
 		case Minimized:
@@ -501,7 +523,7 @@ func (w *window) Perform(acts system.Action) {
 			screenScale := float32(C.getScreenBackingScale())
 			sz := w.config.Size.Div(int(screenScale))
 			x := (int(r.size.width) - sz.X) / 2
-			y := (int(r.size.height) - sz.Y) / 2
+			y := (int(r.size.height) - sz.Y) / 3 * 2
 			C.setScreenFrame(window, C.CGFloat(x), C.CGFloat(y), C.CGFloat(sz.X), C.CGFloat(sz.Y))
 		case system.ActionRaise:
 			C.raiseWindow(window)
