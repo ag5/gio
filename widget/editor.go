@@ -1170,6 +1170,26 @@ func (e *Editor) Regions(start, end int, regions []Region) []Region {
 	return e.text.Regions(start, end, regions)
 }
 
+func (e *Editor) ScrollToEnd() {
+	off := e.text.FullDimensions().Size.Y - e.text.Dimensions().Size.Y
+	e.text.ScrollRel(0, off)
+}
+
+// Dimensions returns the dimensions of the visible text.
+func (e *Editor) Dimensions() layout.Dimensions {
+	return e.text.Dimensions()
+}
+
+// FullDimensions returns the dimensions of all shaped text, including
+// text that isn't visible within the current viewport.
+func (e *Editor) FullDimensions() layout.Dimensions {
+	return e.text.FullDimensions()
+}
+
+func (e *Editor) ScrollTop() int {
+	return e.text.ScrollOff().Y
+}
+
 func abs(n int) int {
 	if n < 0 {
 		return -n
