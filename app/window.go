@@ -886,6 +886,29 @@ func Title(t string) Option {
 	}
 }
 
+// WindowID sets an identifier for the window, under which state belonging to
+// the window is persisted between runs of the program. On platforms where the
+// user places windows, that state is the window position and size: a window is
+// restored where the user last left it instead of being placed by the system.
+// It is unrelated to [ID], which identifies the program to the platform.
+//
+// The identifier defaults to the window Title, which is enough for a program
+// whose windows have distinct titles. Give a window an identifier when the
+// title does not identify it: when several windows share a title, because
+// windows identified the same share one remembered position and open on top of
+// each other; or when the title changes while the window is open, such as one
+// naming the document it shows, because the position would then be remembered
+// under a name that no longer occurs.
+//
+// The identifier is read when the window is first created, and setting it
+// afterwards has no effect. Platforms that do not let a program place its own
+// windows, such as Android, iOS and the web, ignore it.
+func WindowID(id string) Option {
+	return func(_ unit.Metric, cnf *Config) {
+		cnf.ID = id
+	}
+}
+
 // Size sets the size of the window. The mode will be changed to Windowed.
 func Size(w, h unit.Dp) Option {
 	if w <= 0 {

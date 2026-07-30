@@ -31,6 +31,9 @@ type Config struct {
 	MinSize image.Point
 	// Title is the window title displayed in its decoration bar.
 	Title string
+	// ID identifies the window for persisting state that belongs to it, such as
+	// its position and size. It defaults to Title. See the WindowID option.
+	ID string
 	// WindowMode is the window mode.
 	Mode WindowMode
 	// StatusColor is the color of the Android status bar.
