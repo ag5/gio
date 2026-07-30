@@ -455,6 +455,9 @@ func (w *window) Configure(options []Option) {
 	cfg := configFor(screenScale)
 	cnf := w.config
 	cnf.apply(cfg, options)
+	// The frame is autosaved under the ID the window was created with, but keep
+	// the configuration reported to the program in step with what it asked for.
+	w.config.ID = cnf.ID
 	window := C.windowForView(w.view)
 
 	mask := C.getWindowStyleMask(window)
