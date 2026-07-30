@@ -212,6 +212,18 @@ static void resetLayerFrame(CFTypeRef viewRef) {
 	}
 }
 
+static int isAppHidden() {
+	return [NSApplication sharedApplication].isHidden ? 1 : 0;
+}
+
+static void unhideApp() {
+	[NSApp activateIgnoringOtherApps:YES];
+}
+
+static void hideApp() {
+	[[NSApplication sharedApplication] hide: nil];
+}
+
 static void hideWindow(CFTypeRef windowRef) {
 	@autoreleasepool {
 		NSWindow* window = (__bridge NSWindow *)windowRef;
@@ -448,7 +460,12 @@ func (w *window) Configure(options []Option) {
 	mask := C.getWindowStyleMask(window)
 	fullscreen := mask&C.NSWindowStyleMaskFullScreen != 0
 	switch cnf.Mode {
+	case Hidden:
+		C.hideApp()
 	case Fullscreen:
+		if C.isAppHidden() != 0 {
+			C.unhideApp()
+		}
 		if C.isWindowMiniaturized(window) != 0 {
 			C.unhideWindow(window)
 		}
@@ -458,6 +475,9 @@ func (w *window) Configure(options []Option) {
 	case Minimized:
 		C.hideWindow(window)
 	case Maximized:
+		if C.isAppHidden() != 0 {
+			C.unhideApp()
+		}
 		if C.isWindowMiniaturized(window) != 0 {
 			C.unhideWindow(window)
 		}
@@ -469,6 +489,9 @@ func (w *window) Configure(options []Option) {
 			C.zoomWindow(window)
 		}
 	case Windowed:
+		if C.isAppHidden() != 0 {
+			C.unhideApp()
+		}
 		if C.isWindowMiniaturized(window) != 0 {
 			C.unhideWindow(window)
 		}
