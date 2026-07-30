@@ -103,6 +103,28 @@ static NSPoint cascadeTopLeftFromPoint(CFTypeRef windowRef, NSPoint topLeft) {
 	}
 }
 
+// setFrameAutosaveName makes macOS persist the window frame in the user
+// defaults whenever it changes. It returns 0 if another window in this process
+// already autosaves under name.
+static int setFrameAutosaveName(CFTypeRef windowRef, CFTypeRef nameRef) {
+	@autoreleasepool {
+		NSWindow *window = (__bridge NSWindow *)windowRef;
+		NSString *name = (__bridge NSString *)nameRef;
+		return [window setFrameAutosaveName:name] ? 1 : 0;
+	}
+}
+
+// setFrameUsingName applies the frame saved under name by a previous run,
+// refitted to the current screen configuration. It returns 0 if no frame was
+// saved.
+static int setFrameUsingName(CFTypeRef windowRef, CFTypeRef nameRef) {
+	@autoreleasepool {
+		NSWindow *window = (__bridge NSWindow *)windowRef;
+		NSString *name = (__bridge NSString *)nameRef;
+		return [window setFrameUsingName:name] ? 1 : 0;
+	}
+}
+
 static void makeKeyAndOrderFront(CFTypeRef windowRef) {
 	@autoreleasepool {
 		NSWindow *window = (__bridge NSWindow *)windowRef;
@@ -1064,17 +1086,50 @@ func newWindow(win *callbacks, options []Option) {
 		// Release our reference now that the NSWindow has it.
 		C.CFRelease(w.view)
 		w.Configure(options)
-		if nextTopLeft.x == 0 && nextTopLeft.y == 0 {
-			// cascadeTopLeftFromPoint treats (0, 0) as a no-op,
-			// and just returns the offset we need for the first window.
+		if !w.restoreFrame(window, cnf) {
+			if nextTopLeft.x == 0 && nextTopLeft.y == 0 {
+				// cascadeTopLeftFromPoint treats (0, 0) as a no-op,
+				// and just returns the offset we need for the first window.
+				nextTopLeft = C.cascadeTopLeftFromPoint(window, nextTopLeft)
+			}
 			nextTopLeft = C.cascadeTopLeftFromPoint(window, nextTopLeft)
 		}
-		nextTopLeft = C.cascadeTopLeftFromPoint(window, nextTopLeft)
 		C.makeFirstResponder(window, w.view)
 		// makeKeyAndOrderFront assumes ownership of our window reference.
 		C.makeKeyAndOrderFront(window)
 	})
 	<-res
+}
+
+// restoreFrame hands the window frame to macOS' autosave mechanism, so that
+// user moves and resizes are persisted in the user defaults and survive a
+// restart. It reports whether a frame saved by a previous run was applied; if
+// not, the caller places the window itself.
+//
+// Frames are keyed by Config.ID, falling back to the window title; a window with
+// neither keeps the cascading placement. Two windows keyed the same share one
+// remembered frame, and so open on top of each other, which is why the key must
+// identify the window and not merely its kind.
+func (w *window) restoreFrame(window C.CFTypeRef, cnf Config) bool {
+	name := cnf.ID
+	if name == "" {
+		name = cnf.Title
+	}
+	if name == "" {
+		return false
+	}
+	nameRef := stringToNSString(name)
+	defer C.CFRelease(nameRef)
+	if C.setFrameAutosaveName(window, nameRef) == 0 {
+		return false
+	}
+	if cnf.Mode != Windowed {
+		// The window is zoomed or fullscreen, so a saved windowed frame must
+		// not be applied over it. It stays on record for when the user
+		// returns the window to Windowed mode.
+		return false
+	}
+	return C.setFrameUsingName(window, nameRef) != 0
 }
 
 func (w *window) init(customRenderer bool) error {
