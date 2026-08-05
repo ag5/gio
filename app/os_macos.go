@@ -1078,7 +1078,7 @@ func newWindow(win *callbacks, options []Option) {
 		res <- struct{}{}
 		var cnf Config
 		cnf.apply(unit.Metric{}, options)
-		if err := w.init(cnf.CustomRenderer); err != nil {
+		if err := w.init(cnf.CustomRenderer, !cnf.disablePresentationTransaction); err != nil {
 			w.ProcessEvent(DestroyEvent{Err: err})
 			return
 		}
@@ -1132,10 +1132,10 @@ func (w *window) restoreFrame(window C.CFTypeRef, cnf Config) bool {
 	return C.setFrameUsingName(window, nameRef) != 0
 }
 
-func (w *window) init(customRenderer bool) error {
-	presentWithTrans := 1
-	if customRenderer {
-		presentWithTrans = 0
+func (w *window) init(customRenderer, presentationTransaction bool) error {
+	presentWithTrans := 0
+	if !customRenderer && presentationTransaction {
+		presentWithTrans = 1
 	}
 	view := C.gio_createView(C.int(presentWithTrans))
 	if view == 0 {

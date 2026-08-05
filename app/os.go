@@ -52,6 +52,9 @@ type Config struct {
 	TopMost bool
 	// Focused reports whether the window is focused.
 	Focused bool
+	// disablePresentationTransaction prevents Metal drawable presentation from being synchronized
+	// with Core Animation transactions on macOS.
+	disablePresentationTransaction bool
 	// decoHeight is the height of the fallback decoration for platforms such
 	// as Wayland that may need fallback client-side decorations.
 	decoHeight unit.Dp
