@@ -994,6 +994,19 @@ func CustomRenderer(custom bool) Option {
 	}
 }
 
+// PresentationTransaction controls whether Metal drawable presentation is synchronized with Core
+// Animation transactions on macOS. Synchronization is enabled by default and prevents visual
+// glitches during interactive window resizing. Applications that resize their windows
+// programmatically can disable it to present completed frames without waiting for the current Core
+// Animation transaction.
+//
+// This option must be set before the window is created. Other platforms ignore it.
+func PresentationTransaction(enabled bool) Option {
+	return func(_ unit.Metric, cnf *Config) {
+		cnf.disablePresentationTransaction = !enabled
+	}
+}
+
 // Decorated controls whether Gio and/or the platform are responsible
 // for drawing window decorations. Providing false indicates that
 // the application will either be undecorated or will draw its own decorations.
