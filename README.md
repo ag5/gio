@@ -3,6 +3,12 @@
 Immediate mode GUI programs in Go for Android, iOS, macOS, Linux,
 FreeBSD, OpenBSD, Windows, and WebAssembly (experimental).
 
+## AG5 fork
+
+This fork adds editor scroll helpers and macOS window behavior on top of upstream
+Gio. See [AG5 additions](FORK.md) for the patch inventory, API usage, platform
+support, and maintenance notes.
+
 # Installation, examples, documentation
 
 Go to [gioui.org](https://gioui.org).
